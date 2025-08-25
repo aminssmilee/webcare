@@ -17,6 +17,8 @@ use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\Repeater;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\IconColumn;
+use Filament\Forms\Components\Select;
+
 
 class ProductResource extends Resource
 {
@@ -32,22 +34,63 @@ class ProductResource extends Resource
     {
         return $form->schema([
             TextInput::make('title')->required(),
+            TextInput::make('subtitle')->label('Subtitle'), // Tambahan
             Textarea::make('description')->required(),
+            Textarea::make('long_description')->label('Long Description'), // Tambahan
             TextInput::make('price')->numeric()->required(),
             TextInput::make('slug')->required(),
             Toggle::make('is_active')->label('Active')->default(true),
 
-            Repeater::make('images') // relasi hasMany
+            Select::make('category_id')
+            ->label('Category')
+            ->relationship('category', 'name')
+            ->required(),
+
+            Repeater::make('images')
                 ->relationship('images')
                 ->schema([
                     FileUpload::make('image_path')
+                        ->disk('public')
                         ->label('Image')
                         ->directory('products')
                         ->image()
+                        ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
+                        ->maxSize(2048) // maksimal 2MB
                         ->required(),
                 ])
                 ->label('Product Images')
                 ->columnSpanFull(),
+
+            // Specifications
+            Repeater::make('specifications')
+                ->relationship('specifications')
+                ->schema([
+                    TextInput::make('label')->required(),
+                    TextInput::make('value')->required(),
+                ])
+                ->label('Specifications')
+                ->columnSpanFull(),
+
+            // Includes
+            Repeater::make('includes')
+                ->relationship('includes')
+                ->schema([
+                    TextInput::make('item')->required(),
+                ])
+                ->label('Includes')
+                ->columnSpanFull(),
+
+            // Features
+            Repeater::make('features')
+                ->relationship('features')
+                ->schema([
+                    TextInput::make('feature')
+                        ->label('Feature Item')
+                        ->nullable(), // sekarang optional
+                ])
+                ->label('Features')
+                ->columnSpanFull(),
+
         ]);
     }
 
@@ -56,6 +99,7 @@ class ProductResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('title')->searchable(),
+                TextColumn::make('category.name')->label('Category')->sortable(),
                 TextColumn::make('price')->money('IDR'),
                 IconColumn::make('is_active')->boolean(),
                 TextColumn::make('created_at')->dateTime()->sortable(),

@@ -10,8 +10,16 @@ class Banner extends Model
     use HasFactory;
 
     protected $fillable = [
+        'kategori',
         'judul',
+        'headline',
         'deskripsi',
         'gambar',
+        'link'
     ];
+
+    public function getImageUrlAttribute()
+    {
+        return asset('storage/banners/' . $this->gambar);
+    }
 }

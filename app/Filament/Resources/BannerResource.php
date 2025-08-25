@@ -3,15 +3,12 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\BannerResource\Pages;
-use App\Filament\Resources\BannerResource\RelationManagers;
 use App\Models\Banner;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Forms\Components\TextInput;
@@ -28,9 +25,18 @@ class BannerResource extends Resource
     {
         return $form
             ->schema([
+                TextInput::make('kategori')
+                    ->label('Kategori')
+                    ->required()
+                    ->maxLength(100),
+
                 TextInput::make('judul')
                     ->required()
                     ->maxLength(255),
+
+                Textarea::make('headline')
+                    ->label('Headline Utama')
+                    ->maxLength(500),
 
                 Textarea::make('deskripsi')
                     ->maxLength(1000),
@@ -38,7 +44,13 @@ class BannerResource extends Resource
                 FileUpload::make('gambar')
                     ->directory('banners')
                     ->image()
+                    ->required()
                     ->maxSize(2048),
+
+                TextInput::make('link')
+                    ->label('URL Shop Now')
+                    ->placeholder('https://domain.com/shop')
+                    ->maxLength(255),
             ]);
     }
 
@@ -46,9 +58,12 @@ class BannerResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('judul')->searchable()->sortable(),
+                TextColumn::make('kategori')->label('Kategori')->sortable()->searchable(),
+                TextColumn::make('judul')->sortable()->searchable(),
+                TextColumn::make('headline')->limit(30),
                 TextColumn::make('deskripsi')->limit(30),
                 ImageColumn::make('gambar')->label('Gambar'),
+                TextColumn::make('link')->label('Link')->limit(30),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
@@ -60,9 +75,7 @@ class BannerResource extends Resource
 
     public static function getRelations(): array
     {
-        return [
-            //
-        ];
+        return [];
     }
 
     public static function getPages(): array
